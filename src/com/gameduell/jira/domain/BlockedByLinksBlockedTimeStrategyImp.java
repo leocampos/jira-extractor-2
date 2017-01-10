@@ -10,7 +10,6 @@ import com.atlassian.jira.rest.client.api.domain.ChangelogGroup;
 import com.atlassian.jira.rest.client.api.domain.ChangelogItem;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.gameduell.jira.JiraClient;
-import com.gameduell.jira.util.Context;
 import com.gameduell.jira.util.StartEnd;
 
 public class BlockedByLinksBlockedTimeStrategyImp implements BlockedTimeRetrievalStrategy {
@@ -18,8 +17,8 @@ public class BlockedByLinksBlockedTimeStrategyImp implements BlockedTimeRetrieva
 	private static final String LINK = "Link";
 	private JiraClient client;
 	
-	public BlockedByLinksBlockedTimeStrategyImp(Context context) {
-		this.client = context.getJiraClient();
+	public BlockedByLinksBlockedTimeStrategyImp() {
+		this.client = JiraClient.getCurrentInstanceJiraClient();
 	}
 
 	@Override

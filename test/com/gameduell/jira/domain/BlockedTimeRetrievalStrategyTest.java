@@ -1,29 +1,24 @@
 package com.gameduell.jira.domain;
 
+import static com.gameduell.jira.TestUtil.createDateTimeUsingDay;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.gameduell.jira.util.Context;
 import com.gameduell.jira.util.StartEnd;
 
-import static com.gameduell.jira.TestUtil.*;
-
 public class BlockedTimeRetrievalStrategyTest {
-	@Mock
-	private Context context;
-	
 	private BlockedByLinksBlockedTimeStrategyImp imp;
 	
 	@Before
 	public void setup() {
 		 MockitoAnnotations.initMocks(this);
-		 imp = new BlockedByLinksBlockedTimeStrategyImp(context);
+		 imp = new BlockedByLinksBlockedTimeStrategyImp();
 	}
 	
 	@Test

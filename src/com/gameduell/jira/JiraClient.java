@@ -15,21 +15,25 @@ import com.gameduell.jira.util.Context;
 import com.gameduell.jira.util.JiraIssuesIterator;
 
 public class JiraClient {
-	private Context context;
 	private Config config;
 	private Authenticator authenticator;
 	private Expandos[] expandArr = new Expandos[] { Expandos.CHANGELOG };
 	private List<Expandos> expand = Arrays.asList(expandArr);
+	private static ThreadLocal<Context> contextLocal = new ThreadLocal<>();
 
 	protected JiraClient(Config config, Context context, Authenticator authenticator) {
 		this.config = config;
-		this.context = context;
+		contextLocal.set(context);
 		this.authenticator = authenticator;
 		
 		authenticator.setConfig(config);
 		authenticator.setContext(context);
 		
 		context.setJiraClient(this);
+	}
+	
+	public static JiraClient createLoggedClientWithConfiguration(String configurationFilePath) {
+		return new JiraClient(new Config(configurationFilePath), new Context(), new Authenticator()).login();
 	}
 	
 	public static JiraClient createLoggedClient() {
@@ -41,26 +45,26 @@ public class JiraClient {
 		return this;
 	}
 
-	public List<Issue> find(String jql) {
-		List<Issue> issues = new ArrayList<>();
-		
-		findIssues(jql).forEachRemaining(issues::add);
-		
-		return issues;
-	}
-	
-	public List<ExpandedIssue> findWithExpandos(String jql, Expandos[] expandos) {
+	public List<ExpandedIssue> find(String jql) {
 		List<ExpandedIssue> expIssues = new ArrayList<>();
 		
-		find(jql).forEach(item -> 
-			expIssues.add(this.findChangelogAndPopulateIssues(item))
+		findIssues(jql).forEachRemaining(item -> 
+			expIssues.add(new ExpandedIssue(item, StrategyFactory.createBlockedTimeRetrievalStrategyInstance(config.getBlockedTimesStrategy())))
 		);
 		
 		return expIssues;
 	}
 	
+	public List<ExpandedIssue> findWithExpandos(String jql, List<Expandos> expandos) {
+		List<ExpandedIssue> expIssues = find(jql);
+		
+		expIssues.forEach(item -> item.findAndPopulateChangelog(expandos));
+
+		return expIssues;
+	}
+	
 	public List<ExpandedIssue> findWithChangelog(String jql) {
-		return findWithExpandos(jql, expandArr);
+		return findWithExpandos(jql, expand);
 	}
 	
 	public ExpandedIssue findByKeyWithChangelog(String key) {
@@ -72,12 +76,14 @@ public class JiraClient {
 	}
 	
 	Iterator<Issue> findIssues(String jql) {
-		return new JiraIssuesIterator(jql, config, context.getJiraRestClient().getSearchClient());
+		return new JiraIssuesIterator(jql, config, JiraClient.getContext().getJiraRestClient().getSearchClient());
 	}
-	
-	public ExpandedIssue findChangelogAndPopulateIssues(Issue issueWithExpando) {
-		Issue issue = context.getJiraRestClient().getIssueClient().getIssue(issueWithExpando.getKey(), expand).claim();
-	
-		return new ExpandedIssue(issue, StrategyFactory.createBlockedTimeRetrievalStrategyInstance(config.getBlockedTimesStrategy(), context));
+
+	public static Context getContext() {
+		return contextLocal.get();
+	}
+
+	public static JiraClient getCurrentInstanceJiraClient() {
+		return getContext().getJiraClient();
 	}
 }

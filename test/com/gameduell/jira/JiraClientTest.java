@@ -14,7 +14,6 @@ import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.gameduell.jira.authentication.Authenticator;
 import com.gameduell.jira.domain.Config;
 import com.gameduell.jira.domain.ExpandedIssue;
-import com.gameduell.jira.domain.StrategyFactory;
 import com.gameduell.jira.util.Context;
 
 public class JiraClientTest {
@@ -40,11 +39,6 @@ public class JiraClientTest {
 			@Override
 			Iterator<Issue> findIssues(String jql) {
 				return issues.iterator();
-			}
-			
-			@Override
-			public ExpandedIssue findChangelogAndPopulateIssues(Issue issueWithExpando) {
-				return new ExpandedIssue(issueWithExpando, StrategyFactory.createBlockedTimeRetrievalStrategyInstance(config.getBlockedTimesStrategy(), context));
 			}
 		};
 	}

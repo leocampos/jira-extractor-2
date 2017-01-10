@@ -7,6 +7,7 @@ import java.util.stream.StreamSupport;
 
 import org.joda.time.DateTime;
 
+import com.atlassian.jira.rest.client.api.IssueRestClient.Expandos;
 import com.atlassian.jira.rest.client.api.domain.Attachment;
 import com.atlassian.jira.rest.client.api.domain.BasicComponent;
 import com.atlassian.jira.rest.client.api.domain.BasicPriority;
@@ -22,6 +23,7 @@ import com.atlassian.jira.rest.client.api.domain.TimeTracking;
 import com.atlassian.jira.rest.client.api.domain.User;
 import com.atlassian.jira.rest.client.api.domain.Version;
 import com.atlassian.jira.rest.client.api.domain.Worklog;
+import com.gameduell.jira.JiraClient;
 import com.gameduell.jira.util.StartEnd;
 
 public class ExpandedIssue {
@@ -37,6 +39,15 @@ public class ExpandedIssue {
 		super();
 		this.issue = issue;
 		this.blockedTimeRetrievalStrategy = blockedTimeRetrievalStrategy;
+	}
+	
+	
+	public void findAndPopulateChangelog(List<Expandos> expand) {
+		issue = JiraClient.getContext().getJiraRestClient().getIssueClient().getIssue(getKey(), expand).claim();
+	}
+
+	public ExpandedIssue(Issue issue) {
+		this(issue, null);
 	}
 
 	public boolean equals(Object arg0) {
